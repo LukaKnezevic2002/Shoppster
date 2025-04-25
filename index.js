@@ -31,7 +31,7 @@ async function scrapeData(url) {
                 var $ = cheerio.load(html)
 
                 try {
-                    let status = 'ok'
+                    let status = 'ok';
                     var title = $('.product__name') ? $('.product__name').text() : '';
                     var id = $(".product__code") ? $(".product__code").text() : '';
                     var brend = $('.product__brand') ? $('.product__brand').text() : '';
@@ -56,11 +56,11 @@ async function scrapeData(url) {
                         if (selector.length > 0 && selector.attr('title')) {
                             colors.push(selector.attr('title'));
                         }
-                    }                                                              
-                    
+                    }
+
                     var descr = $('.description__text').html() ? $('.description__text').html().replace(/<[^>]*>/g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim() : '';
                     var imageUrl = $(".product__main-media img") ? $(".product__main-media img").attr('src') : '';
-                    var imageName = id + ".avif"
+                    var imageName = id + ".avif";
 
                     if (imageUrl && id) {
                         var imagePath = path.resolve(__dirname, 'images', `${id}.avif`);
@@ -73,7 +73,7 @@ async function scrapeData(url) {
                         }
                     }
 
-                    var returnValues = {
+                    resolve({
                         status,
                         title,
                         brend,
@@ -82,15 +82,21 @@ async function scrapeData(url) {
                         colors,
                         categories,
                         descr,
-                        imageName,
-                    }
-                    resolve(returnValues);
-                    //console.log(returnValues);
-                }
+                        imageName
+                    });
 
-
-                catch (err) {
-                    console.log(err);
+                } catch (err) {
+                    reject({
+                        status: 'offline',
+                        title: '',
+                        brend: '',
+                        price: '',
+                        oldPrice: '',
+                        colors: [],
+                        categories: [],
+                        descr: '',
+                        imageName: ''
+                    });
                 }
 
             } else {
@@ -100,20 +106,20 @@ async function scrapeData(url) {
                     brend: '',
                     price: '',
                     oldPrice: '',
-                    colors: '',
-                    categories: '',
+                    colors: [],
+                    categories: [],
                     descr: '',
-                    imageName: '',
+                    imageName: ''
                 });
             }
-        })
-    })
+        });
+    });
 }
 
 //scrapeData("https://www.shoppster.rs/p/0014084")
 
 async function getLink() {
-    let sqlSelectQuery = "SELECT * FROM products WHERE title = '' ORDER BY id LIMIT 100";
+    let sqlSelectQuery = "SELECT * FROM products WHERE status = '' LIMIT 200";
     conn.query(sqlSelectQuery, async (err, results) => {
         if (err) {
             console.error(err);
